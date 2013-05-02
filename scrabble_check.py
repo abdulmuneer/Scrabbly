@@ -178,7 +178,7 @@ class ScrabbleChecker():
         else:
             result = (x.upper() for x in self.scrabblefile if
                       pattern.match(x))
-            pprint(sorted(result, key=lambda x:len(x)))
+        pprint(sorted(result, key=lambda x:len(x)))
         return True
 
     def possibilities(self, query, length=0):
