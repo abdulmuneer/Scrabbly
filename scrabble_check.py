@@ -61,7 +61,8 @@ class ScrabbleChecker():
                             'c' : self.check,
                             's' : self.suggest,
                             'm' : self.matches,
-                            'p' : self.possibilities
+                            'p' : self.possibilities,
+                            'b' : self.bingo_finder
                             }
 
     def get_options(self):
@@ -72,7 +73,7 @@ class ScrabbleChecker():
         while not option_obtained:
             print '\tChoose Options: ',
             print sorted(x.__name__ for x in self.function_map.values())
-            print '\tIt is enough to enter the first character of any option. Or enter ~ to exit.'
+            print '\tEnter the first character of any option. Or enter ~ to exit.'
 
             option = raw_input('\n')
             option = option.lower()
@@ -157,12 +158,12 @@ class ScrabbleChecker():
         Regexes accepted
         '''
         if length:
-            result = [x.upper() for x in self.scrabblefile if
-                      len(x)==length and re.search(query, x)]
+            result = (x.upper() for x in self.scrabblefile if
+                      len(x)==length and re.search(query, x))
         else:
-            result = [x.upper() for x in self.scrabblefile if
-                      re.search(query, x)]
-        pprint(result)
+            result = (x.upper() for x in self.scrabblefile if
+                      re.search(query, x))
+        pprint(sorted(result, key=lambda x:len(x)))
         return True
 
     def matches(self, query, length=0):
@@ -172,12 +173,12 @@ class ScrabbleChecker():
         '''
         pattern = re.compile(query)
         if length:
-            result = [x.upper() for x in self.scrabblefile if
-                      len(x)==length and pattern.match(x)]
+            result = (x.upper() for x in self.scrabblefile if
+                      len(x)==length and pattern.match(x))
         else:
-            result = [x.upper() for x in self.scrabblefile if
-                      pattern.match(x)]
-        pprint(result)
+            result = (x.upper() for x in self.scrabblefile if
+                      pattern.match(x))
+            pprint(sorted(result, key=lambda x:len(x)))
         return True
 
     def possibilities(self, query, length=0):
@@ -195,12 +196,39 @@ class ScrabbleChecker():
                     return False
             return True
 
-        result = (x.upper() for x in self.scrabblefile if set(x).issubset(set(query)) and letter_count(x, query))
+        result = (x.upper() for x in self.scrabblefile 
+                if set(x).issubset(set(query)) and letter_count(x, query))
         if length:
             result = (x for x in result if len(x)==length)
-        pprint(list(result))
+        pprint(sorted(result, key=lambda x:len(x)))
         return True
 
+    def bingo_finder(self, query, length=0):
+        '''
+        Helps in finding words that you can form using all letters you have
+        '''
+        wordlength = len(query)
+        def is_valid(recommended, query):
+            '''
+            suggested words dhould have all letters from query
+            '''
+            letters = set(query)
+            for letter in letters:
+                if query.count(letter)>recommended.count(letter):
+                    return False
+            return True
+
+
+        result = (x.upper() for x in self.scrabblefile
+                if len(x)>=wordlength and set(query).issubset(set(x)) and is_valid(x, query))
+        if length:
+            result = (x for x in result if len(x)==length)
+        pprint(sorted(result,key=lambda x:len(x)))
+        return True
+
+
+
+
 if __name__ == '__main__':
-    main()            
+    main()
     
