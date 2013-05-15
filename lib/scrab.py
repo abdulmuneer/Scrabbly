@@ -1,20 +1,15 @@
 '''
-Created on March 08, 20123
+Created on May 13, 2013
 
 @author: MUNEER
+
+The main file that andles all logic
 '''
-import re
+import os, re
 from pprint import pprint
 
-file_mapping = {
-    'sowpods' : 'sowpods.txt',
-    'twl' : 'twl.txt'
-        }
-
-
-def main():
-    scrabble_checker = ScrabbleChecker()
-    scrabble_checker.kick_start()
+from config import file_mapping
+from lib.helpers import Extras
 
 class Helpers():
     '''
@@ -51,13 +46,15 @@ class Helpers():
                 print('Invalid option specified.')
         return None if word_list == '~' else word_list
 
-class ScrabbleChecker():
+class Scrabbly():
     '''
     Contains all relevant methods like search, match etc.
     '''
     def __init__(self):
         self.helpers = Helpers()
+        self.extras = Extras()
         self.function_map = {
+                            'a' : self.analyze,
                             'c' : self.check,
                             's' : self.suggest,
                             'm' : self.matches,
@@ -117,14 +114,15 @@ class ScrabbleChecker():
         word_list = self.helpers.choose_wordlist()
         if not word_list:
             return self.exit()
+        dictionary = os.path.join('dictionaries', word_list)
         try:
-            x = open(word_list)
+            x = open(dictionary)
         except:
             x.close()
             self.helpers.error_message()
             return self.exit()
 
-        with open(word_list) as scrabblefile:
+        with open(dictionary) as scrabblefile:
             print 'Word list opened..'
             self.scrabblefile = tuple(x.strip().lower() for x in scrabblefile)
             print 'total words = %s\n'%len(self.scrabblefile)
@@ -210,7 +208,7 @@ class ScrabbleChecker():
         wordlength = len(query)
         def is_valid(recommended, query):
             '''
-            suggested words dhould have all letters from query
+            suggested words should have all letters from query
             '''
             letters = set(query)
             for letter in letters:
@@ -225,10 +223,17 @@ class ScrabbleChecker():
             result = (x for x in result if len(x)==length)
         pprint(sorted(result,key=lambda x:len(x)))
         return True
-
-
-
-
-if __name__ == '__main__':
-    main()
     
+    def analyze(self, query, length=0):
+        bingo_stems = self.extras.get_bingo_stems(query)
+        if bingo_stems:
+            print 'You have bingo stem(s)!!'
+            pprint(bingo_stems)
+        else:
+            print "You have no bingo stems.."
+        return True
+        
+        
+    
+        
+
