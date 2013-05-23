@@ -46,6 +46,14 @@ class Helpers():
                 print('Invalid option specified.')
         return None if word_list == '~' else word_list
 
+
+def of_correct_length(word, length):
+    return True if not length else len(word)==length
+
+def is_from_in_hand(word, in_hand):
+    return True if not in_hand else set(word).issubset(set(in_hand))
+
+
 class Scrabbly():
     '''
     Contains all relevant methods like search, match etc.
@@ -150,32 +158,28 @@ class Scrabbly():
             print "\n'%s' is NOT an accepted word\n"%query
             return True
 
-    def suggest(self, query, length=0):
+    def suggest(self, query, length=0, in_hand=''):
         '''
         Displays all possible words that have the query string as a part of it
         Regexes accepted
         '''
-        if length:
-            result = (x.upper() for x in self.scrabblefile if
-                      len(x)==length and re.search(query, x))
-        else:
-            result = (x.upper() for x in self.scrabblefile if
-                      re.search(query, x))
+        result = (x.upper() for x in self.scrabblefile 
+                  if re.search(query, x) 
+                  and of_correct_length(word, length)
+                  and is_from_in_hand(word, in_hand))
         pprint(sorted(result, key=lambda x:len(x)))
         return True
 
-    def matches(self, query, length=0):
+    def matches(self, query, length=0, in_hand=''):
         '''
         Shows all possible words that are starting with a specific sequence.
         Regexes are accepted
         '''
         pattern = re.compile(query)
-        if length:
-            result = (x.upper() for x in self.scrabblefile if
-                      len(x)==length and pattern.match(x))
-        else:
-            result = (x.upper() for x in self.scrabblefile if
-                      pattern.match(x))
+        result = (x.upper() for x in self.scrabblefile 
+                  if pattern.match(x) 
+                  and of_correct_length(word, length)
+                  and is_from_in_hand(word, in_hand))
         pprint(sorted(result, key=lambda x:len(x)))
         return True
 
